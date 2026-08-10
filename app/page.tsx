@@ -7,6 +7,8 @@ import { ServiceCard } from "@/components/service-card"
 import { Logo } from "@/components/brand"
 import { getActiveDocumentTypes } from "@/lib/queries"
 
+export const dynamic = "force-dynamic"
+
 export default async function HomePage() {
   const services = await getActiveDocumentTypes()
 
