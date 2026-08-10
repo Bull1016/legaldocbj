@@ -8,6 +8,8 @@ import { getDocumentTypeBySlug, getFieldsForDocumentType } from "@/lib/queries"
 import { getSessionUser } from "@/lib/session"
 import { formatPrice, FIELD_TYPES } from "@/lib/status"
 
+export const dynamic = "force-dynamic"
+
 export default async function ServiceDetailPage({
   params,
 }: {
