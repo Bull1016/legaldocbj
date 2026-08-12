@@ -43,10 +43,10 @@ export const FIELD_TYPES = [
   { value: "file", label: "Fichier / pièce jointe" },
 ] as const
 
-export function formatPrice(cents: number): string {
-  if (!cents) return "Gratuit"
+export function formatPrice(price: number): string {
+  if (!price) return "Gratuit"
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "FCFA",
-  }).format(cents)
+  }).format(price)
 }
