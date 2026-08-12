@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { LogOut, User as UserIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -27,12 +26,14 @@ function initials(name: string) {
 }
 
 export function UserMenu({ user }: { user: SessionUser }) {
-  const router = useRouter()
-
   async function handleSignOut() {
-    await authClient.signOut()
-    router.push("/")
-    router.refresh()
+    try {
+      await authClient.signOut()
+    } catch (err) {
+      console.error("Erreur lors de la déconnexion:", err)
+    } finally {
+      window.location.href = "/"
+    }
   }
 
   return (
@@ -64,7 +65,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
           )}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
           Se déconnecter
         </DropdownMenuItem>
