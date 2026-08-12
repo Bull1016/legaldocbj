@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   description:
     "Plateforme de services juridiques : demandez et suivez vos documents officiels (casier judiciaire, certificat de nationalité, et plus) en toute sécurité.",
   generator: 'v0.app',
+  icons: {
+    icon: '/compliant.svg',
+    shortcut: '/compliant.svg',
+    apple: '/compliant.svg',
+  },
 }
 
 export const viewport: Viewport = {
