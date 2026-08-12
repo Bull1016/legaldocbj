@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { SessionUser } from "@/lib/session"
+import { isStaff } from "@/lib/roles"
+import Link from "next/link"
 
 function initials(name: string) {
   return name
@@ -49,10 +51,17 @@ export function UserMenu({ user }: { user: SessionUser }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href="/dashboard">
-            <UserIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-            Mon espace
-          </a>
+          {isStaff(user.role) ? (
+            <Link href="/admin">
+              <UserIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+              Back-office
+            </Link>
+          ) : (
+            <Link href="/dashboard">
+              <UserIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+              Mon espace
+            </Link>
+          )}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
