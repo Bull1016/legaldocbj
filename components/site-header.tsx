@@ -30,13 +30,18 @@ export async function SiteHeader() {
           {user ? (
             <>
               {isStaff(user.role) && (
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/admin">Back-office</Link>
-                </Button>
+                <>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href="/admin">Back-office</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild size="sm">
+                    <Link href="/dashboard">Mon espace</Link>
+                  </Button>
+                </>
               )}
-              <Button asChild size="sm">
-                <Link href="/dashboard">Mon espace</Link>
-              </Button>
             </>
           ) : (
             <>
