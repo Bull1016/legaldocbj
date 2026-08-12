@@ -47,6 +47,6 @@ export function formatPrice(price: number): string {
   if (!price) return "Gratuit"
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "FCFA",
+    currency: "XOF",
   }).format(price)
 }
