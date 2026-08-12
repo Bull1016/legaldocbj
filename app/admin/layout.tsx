@@ -56,20 +56,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
           ))}
         </nav>
-
-        <div className="p-3 border-t border-slate-800">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-slate-400 hover:bg-slate-800 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Espace Client
-          </Link>
-        </div>
-
-        <div className="border-t border-slate-800 p-4 text-xs text-slate-400">
-          Rôle : <span className="font-semibold text-slate-200">{ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ?? user.role}</span>
-        </div>
       </aside>
 
       {/* Main Content Area */}

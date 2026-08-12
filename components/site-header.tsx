@@ -30,7 +30,7 @@ export async function SiteHeader() {
           {user ? (
             <>
               {isStaff(user.role) ? (
-                <Button variant="ghost" size="sm">
+                <Button size="sm">
                   <Link href="/admin">Back-office</Link>
                 </Button>
               ) : (
