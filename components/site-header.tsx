@@ -29,18 +29,14 @@ export async function SiteHeader() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              {isStaff(user.role) && (
-                <>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href="/admin">Back-office</Link>
-                  </Button>
-                </>
+              {isStaff(user.role) ? (
+                <Button variant="ghost" size="sm">
+                  <Link href="/admin">Back-office</Link>
+                </Button>
               ) : (
-                <>
-                  <Button asChild size="sm">
-                    <Link href="/dashboard">Mon espace</Link>
-                  </Button>
-                </>
+                <Button size="sm">
+                  <Link href="/dashboard">Mon espace</Link>
+                </Button>
               )}
             </>
           ) : (
