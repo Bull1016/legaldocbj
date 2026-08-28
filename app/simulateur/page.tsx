@@ -10,9 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calculator, CheckCircle, ArrowRight, Info } from "lucide-react"
 import Link from "next/link"
 
+function finiteNonNegative(value: string) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0
+}
+
 export default function SimulateurPage() {
   const [legalForm, setLegalForm] = useState("SARL")
   const [capital, setCapital] = useState(1000000)
+  const [turnover, setTurnover] = useState(15000000)
   const [employees, setEmployees] = useState(2)
 
   // Simulation calculations according to Benin/APIEX legal fees
@@ -20,21 +26,25 @@ export default function SimulateurPage() {
   let notarizationCost = 0
   let estimatedTaxes = 0
 
+  const safeCapital = Math.max(0, capital)
+  const safeEmployees = Math.max(0, employees)
+  const safeTurnover = Math.max(0, turnover)
+
   if (legalForm === "Établissement") {
     creationFees = 20000
     notarizationCost = 0
-    estimatedTaxes = 10000 // Minimum TPS
+    estimatedTaxes = 10000 + safeEmployees * 5000 // Minimum TPS + charges
   } else if (legalForm === "SARL" || legalForm === "SUARL") {
     creationFees = 50000
-    notarizationCost = capital > 1000000 ? Math.round(capital * 0.02) : 25000
-    estimatedTaxes = 50000
+    notarizationCost = safeCapital > 1000000 ? Math.round(safeCapital * 0.02) : 25000
+    estimatedTaxes = 50000 + safeEmployees * 10000
   } else {
     creationFees = 150000
-    notarizationCost = Math.round(capital * 0.025)
-    estimatedTaxes = 150000
+    notarizationCost = Math.round(safeCapital * 0.025)
+    estimatedTaxes = 150000 + safeEmployees * 15000
   }
 
-  const totalCost = creationFees + notarizationCost
+  const totalCost = creationFees + notarizationCost + estimatedTaxes
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -60,7 +70,7 @@ export default function SimulateurPage() {
             <CardContent className="p-6 space-y-5">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-700">Forme juridique</Label>
-                <Select value={legalForm} onValueChange={setLegalForm}>
+                <Select value={legalForm} onValueChange={(value) => value && setLegalForm(value)}>
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Forme juridique" />
                   </SelectTrigger>
@@ -78,8 +88,20 @@ export default function SimulateurPage() {
                 <Label className="text-xs font-semibold text-slate-700">Capital Social Prévisionnel (FCFA)</Label>
                 <Input
                   type="number"
+                  min={0}
                   value={capital}
-                  onChange={(e) => setCapital(Number(e.target.value) || 0)}
+                  onChange={(e) => setCapital(finiteNonNegative(e.target.value))}
+                  className="bg-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700">Chiffre d'Affaires Annuel Prévisionnel (FCFA)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={turnover}
+                  onChange={(e) => setTurnover(finiteNonNegative(e.target.value))}
                   className="bg-white"
                 />
               </div>
@@ -88,8 +110,9 @@ export default function SimulateurPage() {
                 <Label className="text-xs font-semibold text-slate-700">Nombre de Salariés prévus</Label>
                 <Input
                   type="number"
+                  min={0}
                   value={employees}
-                  onChange={(e) => setEmployees(Number(e.target.value) || 0)}
+                  onChange={(e) => setEmployees(finiteNonNegative(e.target.value))}
                   className="bg-white"
                 />
               </div>
@@ -113,17 +136,21 @@ export default function SimulateurPage() {
                     <span className="text-slate-600">Frais de Notaire / Rédaction d'actes</span>
                     <span className="font-bold text-slate-900">{notarizationCost.toLocaleString()} FCFA</span>
                   </div>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-slate-600">Estimation Impôts & Charges Salariales</span>
+                    <span className="font-bold text-slate-900">{estimatedTaxes.toLocaleString()} FCFA</span>
+                  </div>
                   <div className="flex justify-between items-center py-3 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-                    <span className="font-bold text-slate-900">Total Frais de Création</span>
+                    <span className="font-bold text-slate-900">Total Estimation Globale</span>
                     <span className="text-2xl font-black text-emerald-600">{totalCost.toLocaleString()} FCFA</span>
                   </div>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-lg text-xs text-slate-600 space-y-1 mt-4">
                   <p className="font-bold text-slate-800 flex items-center gap-1">
-                    <Info className="w-3.5 h-3.5 text-blue-600" /> Régime fiscal estimé :
+                    <Info className="w-3.5 h-3.5 text-blue-600" /> Régime fiscal estimé (selon CA annuel) :
                   </p>
-                  <p>{capital < 50000000 ? "Taxe Professionnelle Synthétique (TPS)" : "Régime Réel Normal (IS / TVA)"}</p>
+                  <p>{safeTurnover < 50000000 ? "Taxe Professionnelle Synthétique (TPS)" : "Régime Réel Normal (IS / TVA)"}</p>
                 </div>
               </CardContent>
             </div>

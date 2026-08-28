@@ -13,7 +13,7 @@ export async function uploadFile(formData: FormData): Promise<{ url: string; nam
 
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
   const blob = await put(`requests/${user.id}/${Date.now()}-${safeName}`, file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: true,
   })
 

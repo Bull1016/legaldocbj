@@ -79,8 +79,15 @@ BETTER_AUTH_SECRET="une_cle_secrete_tres_longue_et_aleatoire"
 # URL de l'application
 BETTER_AUTH_URL="http://localhost:3000"
 
-# Configuration Vercel Blob (pour le téléversement de fichiers)
+# Jeton d'un store Vercel Blob configuré en accès privé
 BLOB_READ_WRITE_TOKEN="votre_token_vercel_blob"
+
+# FedaPay (valeurs autorisées : sandbox ou live)
+FEDAPAY_ENVIRONMENT="sandbox"
+FEDAPAY_SECRET_KEY="votre_cle_secrete_fedapay"
+
+# Authentifie l'appel quotidien de la tâche de conservation Vercel Cron
+CRON_SECRET="une_valeur_longue_et_aleatoire"
 ```
 
 ### 2. Lancer le projet localement
