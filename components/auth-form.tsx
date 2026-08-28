@@ -14,11 +14,16 @@ import { toast } from "sonner"
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const next = searchParams.get("next") || "/dashboard"
+  const requestedNext = searchParams.get("next")
+  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+    ? requestedNext
+    : "/dashboard"
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false)
+  const [twoFactorCode, setTwoFactorCode] = useState("")
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,8 +33,13 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         const { error } = await authClient.signUp.email({ email, password, name })
         if (error) throw new Error(error.message || "Inscription impossible")
       } else {
-        const { error } = await authClient.signIn.email({ email, password })
+        const { data, error } = await authClient.signIn.email({ email, password })
         if (error) throw new Error(error.message || "Connexion impossible")
+        if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
+          setTwoFactorRequired(true)
+          setLoading(false)
+          return
+        }
       }
       router.push(next)
       router.refresh()
@@ -39,7 +49,58 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     }
   }
 
+  async function onVerifyTwoFactor(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const { error } = await authClient.twoFactor.verifyTotp({
+        code: twoFactorCode,
+        trustDevice: false,
+      })
+      if (error) throw new Error(error.message || "Code de vérification invalide")
+      router.push(next)
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Vérification impossible")
+      setLoading(false)
+    }
+  }
+
   const isSignUp = mode === "sign-up"
+
+  if (twoFactorRequired) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-card/40 px-4 py-10">
+        <Link href="/" className="mb-6" aria-label="Accueil">
+          <Logo className="text-xl" />
+        </Link>
+        <Card className="w-full max-w-sm p-6 sm:p-8">
+          <h1 className="font-serif text-2xl font-semibold text-balance">Vérification en deux étapes</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Saisissez le code à six chiffres de votre application d'authentification.
+          </p>
+          <form onSubmit={onVerifyTwoFactor} className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="two-factor-code">Code de vérification</Label>
+              <Input
+                id="two-factor-code"
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                required
+                autoFocus
+              />
+            </div>
+            <Button type="submit" disabled={loading || twoFactorCode.length !== 6} className="w-full">
+              {loading ? "Vérification…" : "Vérifier et se connecter"}
+            </Button>
+          </form>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-card/40 px-4 py-10">

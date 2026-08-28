@@ -105,8 +105,17 @@ export default function ModelesJuridiquesPage() {
   }
 
   function handleDownload() {
+    let textToDownload = previewText
+    if (!textToDownload) {
+      textToDownload = selectedTemplate.templateText
+      selectedTemplate.fields.forEach((f) => {
+        const val = formData[f.key] || `[${f.label}]`
+        textToDownload = textToDownload.replaceAll(`{{${f.key}}}`, val)
+      })
+      textToDownload = textToDownload.replaceAll("{{date}}", new Date().toLocaleDateString("fr-FR"))
+    }
     const element = document.createElement("a")
-    const file = new Blob([previewText], { type: "text/plain;charset=utf-8" })
+    const file = new Blob([textToDownload], { type: "text/plain;charset=utf-8" })
     element.href = URL.createObjectURL(file)
     element.download = `${selectedTemplate.title.replaceAll(" ", "_")}.txt`
     document.body.appendChild(element)
@@ -137,8 +146,17 @@ export default function ModelesJuridiquesPage() {
             {TEMPLATES_DATA.map((tmpl) => (
               <Card
                 key={tmpl.id}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selectedTemplate.id === tmpl.id}
                 onClick={() => handleSelectTemplate(tmpl)}
-                className={`cursor-pointer transition-all border ${
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    handleSelectTemplate(tmpl)
+                  }
+                }}
+                className={`cursor-pointer transition-all border focus:outline-none focus:ring-2 focus:ring-emerald-600 ${
                   selectedTemplate.id === tmpl.id
                     ? "border-emerald-600 bg-emerald-50/40 ring-1 ring-emerald-600 shadow-sm"
                     : "border-slate-200 hover:border-slate-300 bg-white"

@@ -76,7 +76,7 @@ export default async function RequestDetailPage({
                   <dd className="text-sm">
                     {v.fileUrl ? (
                       <a
-                        href={v.fileUrl}
+                        href={`/api/documents/${v.id}`}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 text-primary underline"

@@ -1,12 +1,15 @@
 import { db } from "@/lib/db"
 import { payment, request, documentType } from "@/lib/db/schema"
+import { requireUser } from "@/lib/session"
 import { eq } from "drizzle-orm"
 import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { processPaymentSuccess } from "@/lib/fedapay"
+import { getFedaPayConfig, processPaymentSuccess } from "@/lib/fedapay"
 import { CheckCircle2, CreditCard, Smartphone } from "lucide-react"
+
+export const dynamic = "force-dynamic"
 
 export default async function PaymentCheckoutPage({
   params,
@@ -15,12 +18,17 @@ export default async function PaymentCheckoutPage({
   params: Promise<{ reference: string }>
   searchParams: Promise<{ simulated?: string }>
 }) {
+  const user = await requireUser()
   const { reference } = await params
   const { simulated } = await searchParams
 
+  const { environment } = getFedaPayConfig()
+  const isSandbox = environment === "sandbox"
+  const isSimulatedAllowed = isSandbox && simulated === "true"
+
   const [payRecord] = await db.select().from(payment).where(eq(payment.reference, reference))
 
-  if (!payRecord) {
+  if (!payRecord || payRecord.userId !== user.id) {
     notFound()
   }
 
@@ -38,12 +46,23 @@ export default async function PaymentCheckoutPage({
 
   async function handleSimulateSuccess() {
     "use server"
+    const authUser = await requireUser()
+    const [currentPay] = await db.select().from(payment).where(eq(payment.reference, reference))
+    if (!currentPay || currentPay.userId !== authUser.id) {
+      throw new Error("Non autorisé")
+    }
+    if (getFedaPayConfig().environment !== "sandbox") {
+      throw new Error("Paiement simulé interdit en production")
+    }
     await processPaymentSuccess({
       reference,
       transactionId: `SIM-${Date.now()}`,
       mode: "MTN Mobile Money Sandbox",
     })
-    redirect(`/dashboard/demandes/${payRecord?.requestId || ""}`)
+    if (currentPay.requestId) {
+      redirect(`/dashboard/demandes/${currentPay.requestId}`)
+    }
+    redirect("/dashboard?payment=success")
   }
 
   return (
@@ -79,7 +98,7 @@ export default async function PaymentCheckoutPage({
               </div>
             ) : (
               <div className="space-y-4">
-                <h3 className="font-medium text-slate-800 text-sm">Sélectionnez le mode de paiement (Sandbox FedaPay) :</h3>
+                <h3 className="font-medium text-slate-800 text-sm">Sélectionnez le mode de paiement :</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-4 border rounded-xl border-emerald-500 bg-emerald-50/50 flex flex-col items-center justify-center gap-2 text-center cursor-pointer">
                     <Smartphone className="w-6 h-6 text-emerald-600" />
@@ -91,11 +110,17 @@ export default async function PaymentCheckoutPage({
                   </div>
                 </div>
 
-                <form action={handleSimulateSuccess} className="pt-4">
-                  <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-6 text-base rounded-xl shadow-md">
-                    Payer {payRecord.amount.toLocaleString()} XOF maintenant (Sandbox)
-                  </Button>
-                </form>
+                {isSimulatedAllowed ? (
+                  <form action={handleSimulateSuccess} className="pt-4">
+                    <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-6 text-base rounded-xl shadow-md">
+                      Payer {payRecord.amount.toLocaleString()} XOF maintenant (Sandbox)
+                    </Button>
+                  </form>
+                ) : (
+                  <p className="text-xs text-slate-500 text-center pt-2">
+                    Veuillez procéder au paiement via le guichet sécurisé FedaPay.
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

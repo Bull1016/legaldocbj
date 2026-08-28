@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { and, eq, lte } from "drizzle-orm"
 import { headers } from "next/headers"
 
 export type SessionUser = {
@@ -22,6 +22,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       name: user.name,
       email: user.email,
       role: user.role,
+      updatedAt: user.updatedAt,
     })
     .from(user)
     .where(eq(user.id, session.user.id))
@@ -29,7 +30,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   const dbUser = rows[0]
   if (!dbUser) return null
-  return dbUser
+
+  const activityRefreshCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  if (dbUser.updatedAt <= activityRefreshCutoff) {
+    await db
+      .update(user)
+      .set({ updatedAt: new Date() })
+      .where(and(eq(user.id, dbUser.id), lte(user.updatedAt, activityRefreshCutoff)))
+  }
+
+  return {
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    role: dbUser.role,
+  }
 }
 
 // Throws if not authenticated. Use inside server actions.

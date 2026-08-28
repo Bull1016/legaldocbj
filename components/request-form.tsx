@@ -119,7 +119,7 @@ export function RequestForm({
                 rows={4}
               />
             ) : field.fieldType === "select" ? (
-              <Select value={fs.value} onValueChange={(v) => update(field.id, { value: v })}>
+              <Select value={fs.value} onValueChange={(v) => v && update(field.id, { value: v })}>
                 <SelectTrigger id={`field-${field.id}`}>
                   <SelectValue placeholder="Sélectionnez…" />
                 </SelectTrigger>
@@ -151,16 +151,6 @@ export function RequestForm({
                     onChange={(e) => handleFile(field, e.target.files?.[0])}
                   />
                 </label>
-                {fs.fileUrl && (
-                  <a
-                    href={fs.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm text-primary underline"
-                  >
-                    Aperçu
-                  </a>
-                )}
               </div>
             ) : (
               <Input

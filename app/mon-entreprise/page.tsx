@@ -1,5 +1,7 @@
 import { db } from "@/lib/db"
 import { company } from "@/lib/db/schema"
+import { requireUser } from "@/lib/session"
+import { eq } from "drizzle-orm"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +11,10 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 export default async function MonEntreprisePage() {
+  const user = await requireUser()
   let companiesList: Array<typeof company.$inferSelect> = []
   try {
-    companiesList = await db.select().from(company)
+    companiesList = await db.select().from(company).where(eq(company.userId, user.id))
   } catch (e) {
     companiesList = []
   }
@@ -60,8 +63,14 @@ export default async function MonEntreprisePage() {
                         Forme : <span className="text-emerald-400 font-semibold">{c.legalForm}</span> | Siège : {c.city}, {c.country}
                       </CardDescription>
                     </div>
-                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold rounded-full">
-                      {c.status === "active" ? "Immatriculée" : "En cours"}
+                    <span className={`px-3 py-1 border text-xs font-semibold rounded-full ${
+                      c.status === "active"
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                        : c.status === "dissolved"
+                        ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                        : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                    }`}>
+                      {c.status === "active" ? "Immatriculée" : c.status === "dissolved" ? "Dissoute" : "En cours de création"}
                     </span>
                   </CardHeader>
                   <CardContent className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
@@ -100,10 +109,6 @@ export default async function MonEntreprisePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3 text-xs">
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <p className="font-bold text-amber-900">Déclaration TPS / TVA Mensuelle</p>
-                    <p className="text-amber-700 mt-0.5">Échéance : 10 du mois prochain</p>
-                  </div>
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="font-bold text-blue-900">Cotisations Sociales CNSS</p>
                     <p className="text-blue-700 mt-0.5">Échéance : 15 du mois prochain</p>

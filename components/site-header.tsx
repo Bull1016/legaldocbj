@@ -32,7 +32,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+          <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
             <Link href="/mon-entreprise">Mon espace entreprise</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">

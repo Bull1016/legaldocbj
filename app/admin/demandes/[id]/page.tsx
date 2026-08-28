@@ -106,7 +106,7 @@ export default async function AdminRequestDetailPage({
                     <dd className="text-sm text-slate-900 mt-1">
                       {v.fileUrl ? (
                         <a
-                          href={v.fileUrl}
+                          href={`/api/documents/${v.id}`}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 text-primary hover:underline bg-primary/5 px-3 py-1.5 rounded border border-primary/10 w-fit"

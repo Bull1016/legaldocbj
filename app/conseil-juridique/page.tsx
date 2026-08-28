@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,20 +9,42 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageSquare, Scale, CheckCircle2, ShieldCheck, Send } from "lucide-react"
+import { MessageSquare, Scale, CheckCircle2, ShieldCheck, Send, Loader2 } from "lucide-react"
+import { createLegalAdviceAction } from "@/app/actions/legal-advice"
 
 export default function ConseilJuridiquePage() {
+  const router = useRouter()
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState("")
   const [formData, setFormData] = useState({
     subject: "",
     category: "Droit des Sociétés / OHADA",
     description: "",
   })
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!formData.subject || !formData.description) return
-    setSubmitted(true)
+    if (!formData.subject.trim() || !formData.description.trim()) return
+    setLoading(true)
+    setErrorMsg("")
+
+    try {
+      const res = await createLegalAdviceAction(formData)
+      if (!res.success && res.code === "unauthorized") {
+        router.push("/sign-in?next=/conseil-juridique")
+        return
+      }
+      if (!res.success) {
+        setErrorMsg(res.error)
+        return
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Une erreur s'est produite lors de la soumission.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -76,7 +99,9 @@ export default function ConseilJuridiquePage() {
                       <Label className="text-xs font-semibold text-slate-700">Domaine juridique</Label>
                       <Select
                         value={formData.category}
-                        onValueChange={(val) => setFormData({ ...formData, category: val })}
+                        onValueChange={(val) => {
+                          if (val) setFormData({ ...formData, category: val })
+                        }}
                       >
                         <SelectTrigger className="bg-white">
                           <SelectValue placeholder="Sélectionnez le domaine" />
@@ -113,13 +138,17 @@ export default function ConseilJuridiquePage() {
                         className="bg-white"
                       />
                     </div>
+
+                    {errorMsg && (
+                      <p className="text-xs text-red-600 font-medium">{errorMsg}</p>
+                    )}
                   </CardContent>
                   <CardFooter className="bg-slate-50 border-t p-4 rounded-b-xl flex justify-between">
                     <span className="text-xs text-slate-500 flex items-center gap-1">
                       Tarif consultation : <strong className="text-slate-900">15 000 FCFA</strong>
                     </span>
-                    <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-2">
-                      <Send className="w-4 h-4" /> Envoyer ma demande
+                    <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-2">
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Envoyer ma demande
                     </Button>
                   </CardFooter>
                 </form>
@@ -129,7 +158,7 @@ export default function ConseilJuridiquePage() {
                 <CheckCircle2 className="w-16 h-16 text-emerald-600 mx-auto" />
                 <h2 className="text-2xl font-bold text-slate-900">Demande transmise avec succès !</h2>
                 <p className="text-slate-600 text-sm max-w-md mx-auto">
-                  Votre question a été assignée à notre équipe de juristes. Vous recevrez une notification par e-mail dès qu'une réponse sera disponible sur votre espace.
+                  Votre demande a bien été enregistrée dans votre compte. Nos juristes l'examineront dans les meilleurs délais.
                 </p>
                 <Button onClick={() => setSubmitted(false)} variant="outline" className="mt-4">
                   Poser une autre question

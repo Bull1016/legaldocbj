@@ -21,15 +21,15 @@ export async function createAuditLog({
   ipAddress?: string | null
 }) {
   try {
-    const detailsStr = typeof details === "object" ? JSON.stringify(details) : details
+    const detailsStr = details === null ? null : typeof details === "object" ? JSON.stringify(details) : details
     await db.insert(auditLog).values({
       actorId,
       actorName: actorName || "Utilisateur",
       actorRole,
       action,
       entityType,
-      entityId: entityId ? String(entityId) : null,
-      details: detailsStr || null,
+      entityId: entityId != null ? String(entityId) : null,
+      details: detailsStr ?? null,
       ipAddress: ipAddress || null,
     })
   } catch (error) {
