@@ -6,7 +6,9 @@ import {
   serial,
   integer,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 // ---------------------------------------------------------------------------
 // Better Auth tables (column names must stay camelCase to match Better Auth)
@@ -65,6 +67,25 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
 
+export const twoFactor = pgTable(
+  "twoFactor",
+  {
+    id: text("id").primaryKey(),
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    secret: text("secret").notNull(),
+    backupCodes: text("backupCodes").notNull(),
+    verified: boolean("verified").notNull().default(true),
+    failedVerificationCount: integer("failedVerificationCount").notNull().default(0),
+    lockedUntil: timestamp("lockedUntil"),
+  },
+  (table) => [
+    index("two_factor_user_id_idx").on(table.userId),
+    index("two_factor_secret_idx").on(table.secret),
+  ]
+)
+
 // ---------------------------------------------------------------------------
 // Application tables
 // ---------------------------------------------------------------------------
@@ -109,6 +130,7 @@ export const request = pgTable("request", {
   paymentStatus: text("paymentStatus").notNull().default("unpaid"), // unpaid | pending | paid
   assignedTo: text("assignedTo"),
   notes: text("notes"),
+  legalHold: boolean("legalHold").notNull().default(false),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
@@ -172,8 +194,10 @@ export const payment = pgTable(
     currency: text("currency").notNull().default("XOF"),
     provider: text("provider").notNull().default("fedapay"),
     transactionId: text("transactionId"), // External FedaPay Transaction ID
+    paymentUrl: text("paymentUrl"),
     status: text("status").notNull().default("pending"), // pending | approved | declined | canceled
     mode: text("mode"), // mtm, moov, card, etc.
+    legalHold: boolean("legalHold").notNull().default(false),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
@@ -261,7 +285,7 @@ export const subscription = pgTable(
       .references(() => company.id, { onDelete: "cascade" }),
     userId: text("userId").notNull(),
     plan: text("plan").notNull(), // "starter" | "pro" | "enterprise"
-    status: text("status").notNull().default("active"), // active | canceled | expired
+    status: text("status").notNull().default("active"), // pending | active | canceled | expired
     price: integer("price").notNull().default(0), // XOF per month
     startDate: timestamp("startDate").notNull().defaultNow(),
     endDate: timestamp("endDate"),
@@ -269,6 +293,9 @@ export const subscription = pgTable(
   },
   (table) => [
     index("subscription_company_id_idx").on(table.companyId),
+    uniqueIndex("subscription_one_pending_per_company_idx")
+      .on(table.companyId)
+      .where(sql`${table.status} = 'pending'`),
   ]
 )
 

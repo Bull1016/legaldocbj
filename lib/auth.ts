@@ -3,7 +3,8 @@ import { twoFactor } from 'better-auth/plugins'
 import { pool } from '@/lib/db'
 
 export const auth = betterAuth({
-  plugins: [twoFactor()],
+  appName: 'LegalDoc BJ',
+  plugins: [twoFactor({ issuer: 'LegalDoc BJ' })],
   database: pool,
   baseURL:
     process.env.BETTER_AUTH_URL ??

@@ -35,22 +35,28 @@ export default function ConfidentialitePage() {
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">3. Sécurité du Stockage et Durées de Conservation</h2>
             <p>
-              Les fichiers téléversés sur Vercel Blob sont associés à des URLs d'accès contrôlées. La plateforme met en œuvre un contrôle d'accès strict par session authentifiée, l'HTTPS obligatoire et un suivi d'audit d'accès.
+              Les fichiers téléversés sont stockés dans un espace Vercel Blob privé. Ils sont délivrés uniquement par une route de téléchargement qui vérifie la session et les droits d'accès, puis journalise chaque consultation. L'HTTPS est obligatoire et les réponses ne sont pas mises en cache.
             </p>
             <p className="mt-2">
               Les durées de conservation des données par catégorie s'établissent comme suit :
             </p>
             <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li><strong>Pièces justificatives et fichiers de démarches :</strong> Conservés pendant 5 ans après la fin de la prestation commerciale conformément aux obligations comptables et fiscales.</li>
-              <li><strong>Données de compte utilisateur :</strong> Conservées jusqu'à la fermeture du compte ou 3 ans après la dernière activité.</li>
-              <li><strong>Historique des transactions de paiement :</strong> Conservé 10 ans en conformité avec le droit commercial OHADA.</li>
+              <li><strong>Pièces justificatives et fichiers de démarches :</strong> supprimés 5 ans après la fin d'une prestation achevée ou rejetée.</li>
+              <li><strong>Données de compte utilisateur :</strong> anonymisées après 3 ans sans activité de compte.</li>
+              <li><strong>Historique des transactions de paiement :</strong> conservé 10 ans en archive à accès restreint, puis supprimé. Cette durée découle de l'article 24 de l'Acte uniforme OHADA relatif au droit comptable et à l'information financière, qui impose dix ans de conservation des livres et pièces justificatives comptables.</li>
             </ul>
+            <p className="mt-2 text-xs text-slate-600">
+              Une tâche automatisée applique quotidiennement ces échéances. Lorsqu'une obligation légale, un contentieux ou une demande d'une autorité interdit la suppression, un gel juridique conserve le dossier en archive restreinte jusqu'à sa levée.
+            </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">4. Vos Droits et Contact APDP</h2>
             <p>
-              Conformément au Code du Numérique du Bénin et à la réglementation APDP, vous disposez des droits d'accès, de rectification, de portabilité, d'opposition et de suppression de vos données. Pour exercer ces droits, contactez notre Délégué à la Protection des Données (DPO) à : <code>dpo@legaldoc.bj</code>.
+              Conformément au Code du Numérique du Bénin et à la réglementation APDP, vous disposez des droits d'accès, de rectification, de portabilité, d'opposition et de suppression de vos données. Lorsque le traitement repose sur votre consentement, vous pouvez le retirer à tout moment, sans remettre en cause les traitements déjà réalisés licitement. Pour exercer ces droits, contactez notre Délégué à la Protection des Données (DPO) à : <code>dpo@legaldoc.bj</code>.
+            </p>
+            <p className="mt-2">
+              Vous pouvez également déposer une plainte auprès de l'APDP au siège de l'institution, Rue 6.076 Aïdjèdo à Cotonou, ou par e-mail à <a href="mailto:contact@apdp.bj" className="text-primary underline">contact@apdp.bj</a>. Les informations et démarches officielles sont disponibles sur le <a href="https://service.apdp.bj/" target="_blank" rel="noreferrer" className="text-primary underline">portail de l'APDP Bénin</a>.
             </p>
           </section>
         </div>

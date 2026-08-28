@@ -10,6 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calculator, CheckCircle, ArrowRight, Info } from "lucide-react"
 import Link from "next/link"
 
+function finiteNonNegative(value: string) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0
+}
+
 export default function SimulateurPage() {
   const [legalForm, setLegalForm] = useState("SARL")
   const [capital, setCapital] = useState(1000000)
@@ -65,7 +70,7 @@ export default function SimulateurPage() {
             <CardContent className="p-6 space-y-5">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-700">Forme juridique</Label>
-                <Select value={legalForm} onValueChange={setLegalForm}>
+                <Select value={legalForm} onValueChange={(value) => value && setLegalForm(value)}>
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Forme juridique" />
                   </SelectTrigger>
@@ -85,7 +90,7 @@ export default function SimulateurPage() {
                   type="number"
                   min={0}
                   value={capital}
-                  onChange={(e) => setCapital(Math.max(0, Number(e.target.value) || 0))}
+                  onChange={(e) => setCapital(finiteNonNegative(e.target.value))}
                   className="bg-white"
                 />
               </div>
@@ -96,7 +101,7 @@ export default function SimulateurPage() {
                   type="number"
                   min={0}
                   value={turnover}
-                  onChange={(e) => setTurnover(Math.max(0, Number(e.target.value) || 0))}
+                  onChange={(e) => setTurnover(finiteNonNegative(e.target.value))}
                   className="bg-white"
                 />
               </div>
@@ -107,7 +112,7 @@ export default function SimulateurPage() {
                   type="number"
                   min={0}
                   value={employees}
-                  onChange={(e) => setEmployees(Math.max(0, Number(e.target.value) || 0))}
+                  onChange={(e) => setEmployees(finiteNonNegative(e.target.value))}
                   className="bg-white"
                 />
               </div>

@@ -10,7 +10,7 @@ export function SiteHeader() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-5 text-sm text-muted-foreground md:flex">
+        <nav className="hidden items-center gap-5 text-sm text-muted-foreground lg:flex">
           <Link href="/quiz-forme-juridique" className="transition-colors hover:text-foreground font-medium">
             Créer mon entreprise
           </Link>

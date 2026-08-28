@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { processPaymentSuccess } from "@/lib/fedapay"
+import { getFedaPayConfig, processPaymentSuccess } from "@/lib/fedapay"
 import { CheckCircle2, CreditCard, Smartphone } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -22,8 +22,8 @@ export default async function PaymentCheckoutPage({
   const { reference } = await params
   const { simulated } = await searchParams
 
-  const environment = process.env.FEDAPAY_ENVIRONMENT || "sandbox"
-  const isSandbox = environment !== "live"
+  const { environment } = getFedaPayConfig()
+  const isSandbox = environment === "sandbox"
   const isSimulatedAllowed = isSandbox && simulated === "true"
 
   const [payRecord] = await db.select().from(payment).where(eq(payment.reference, reference))
@@ -51,7 +51,7 @@ export default async function PaymentCheckoutPage({
     if (!currentPay || currentPay.userId !== authUser.id) {
       throw new Error("Non autorisé")
     }
-    if (process.env.FEDAPAY_ENVIRONMENT === "live") {
+    if (getFedaPayConfig().environment !== "sandbox") {
       throw new Error("Paiement simulé interdit en production")
     }
     await processPaymentSuccess({

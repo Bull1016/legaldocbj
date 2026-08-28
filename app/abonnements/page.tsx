@@ -73,17 +73,21 @@ export default function AbonnementsSolutionsPage() {
 
     try {
       const res = await createSubscriptionPaymentAction(planId)
-      if (res.success && res.paymentUrl) {
-        router.push(res.paymentUrl)
-      } else {
-        setErrorMsg((res as any).error || "Impossible de démarrer le paiement d'abonnement.")
+      if (!res.success && res.code === "unauthorized") {
+        router.push("/sign-in?next=/abonnements")
+        return
       }
-    } catch (err: any) {
-      if (err?.message?.includes("Non autorisé") || err?.message?.includes("UNAUTHORIZED")) {
-        router.push("/sign-in?redirect=/abonnements")
-      } else {
-        setErrorMsg(err?.message || "Une erreur est survenue lors de la souscription.")
+      if (!res.success && res.code === "invalid_plan") {
+        setErrorMsg("Ce plan n'est pas disponible au paiement en ligne.")
+        return
       }
+      if (!res.success) {
+        setErrorMsg(res.error || "Impossible de démarrer le paiement d'abonnement.")
+        return
+      }
+      router.push(res.paymentUrl)
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Une erreur est survenue lors de la souscription.")
     } finally {
       setLoadingPlan(null)
     }

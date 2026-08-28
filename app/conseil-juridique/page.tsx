@@ -25,19 +25,23 @@ export default function ConseilJuridiquePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!formData.subject || !formData.description) return
+    if (!formData.subject.trim() || !formData.description.trim()) return
     setLoading(true)
     setErrorMsg("")
 
     try {
-      await createLegalAdviceAction(formData)
-      setSubmitted(true)
-    } catch (err: any) {
-      if (err?.message?.includes("Non autorisé") || err?.message?.includes("UNAUTHORIZED")) {
-        router.push("/sign-in?redirect=/conseil-juridique")
-      } else {
-        setErrorMsg(err?.message || "Une erreur s'est produite lors de la soumission.")
+      const res = await createLegalAdviceAction(formData)
+      if (!res.success && res.code === "unauthorized") {
+        router.push("/sign-in?next=/conseil-juridique")
+        return
       }
+      if (!res.success) {
+        setErrorMsg(res.error)
+        return
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Une erreur s'est produite lors de la soumission.")
     } finally {
       setLoading(false)
     }
@@ -95,7 +99,9 @@ export default function ConseilJuridiquePage() {
                       <Label className="text-xs font-semibold text-slate-700">Domaine juridique</Label>
                       <Select
                         value={formData.category}
-                        onValueChange={(val) => setFormData({ ...formData, category: val })}
+                        onValueChange={(val) => {
+                          if (val) setFormData({ ...formData, category: val })
+                        }}
                       >
                         <SelectTrigger className="bg-white">
                           <SelectValue placeholder="Sélectionnez le domaine" />

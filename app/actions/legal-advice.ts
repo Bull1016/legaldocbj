@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { legalAdvice } from "@/lib/db/schema"
-import { requireUser } from "@/lib/session"
+import { getSessionUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export async function createLegalAdviceAction(input: {
@@ -10,23 +10,33 @@ export async function createLegalAdviceAction(input: {
   category: string
   description: string
 }) {
-  const user = await requireUser()
+  const user = await getSessionUser()
+  if (!user) {
+    return { success: false as const, code: "unauthorized" as const }
+  }
 
-  if (!input.subject || !input.description) {
-    throw new Error("Le sujet et la description sont obligatoires.")
+  const subject = input.subject.trim()
+  const description = input.description.trim()
+
+  if (!subject || !description) {
+    return {
+      success: false as const,
+      code: "invalid_input" as const,
+      error: "Le sujet et la description sont obligatoires.",
+    }
   }
 
   const [created] = await db
     .insert(legalAdvice)
     .values({
       userId: user.id,
-      subject: input.subject,
+      subject,
       category: input.category || "Question Juridique",
-      description: input.description,
+      description,
       status: "pending",
     })
     .returning({ id: legalAdvice.id })
 
   revalidatePath("/dashboard")
-  return created
+  return { success: true as const, id: created.id }
 }
