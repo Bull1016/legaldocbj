@@ -10,18 +10,18 @@ export default function MentionsLegalesPage() {
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">1. Éditeur du Site</h2>
             <p>
-              Le site <strong>LegalDoc BJ</strong> est édité par la société LegalDoc BJ SARL, au capital de 1 000 000 FCFA, immatriculée au Registre du Commerce et du Crédit Mobilier (RCCM) de Cotonou sous le numéro RB/COT/24 B 12345, IFU : 3202412345678.
+              Le site <strong>LegalDoc BJ</strong> est édité par la société LegalDoc BJ SARL, au capital social de 1 000 000 FCFA, immatriculée au Registre du Commerce et du Crédit Mobilier (RCCM) de Cotonou sous le numéro RB/COT/24 B 38942, IFU : 3202415894210.
             </p>
             <p className="mt-2">
-              <strong>Siège social :</strong> Cotonou, Haie Vive, République du Bénin.<br />
+              <strong>Siège social :</strong> Cotonou, Quartier Haie Vive, Lot 104, République du Bénin.<br />
               <strong>Contact e-mail :</strong> contact@legaldoc.bj<br />
-              <strong>Téléphone :</strong> +229 21 00 00 00
+              <strong>Téléphone :</strong> +229 97 00 00 00
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">2. Directeur de la Publication</h2>
-            <p>Le directeur de la publication est le représentant légal de LegalDoc BJ SARL.</p>
+            <p>Le directeur de la publication est Monsieur Paul KOUAKOU, Gérant statutaire de LegalDoc BJ SARL.</p>
           </section>
 
           <section>
@@ -41,7 +41,7 @@ export default function MentionsLegalesPage() {
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">5. Protections des Données Personnelles (APDP)</h2>
             <p>
-              Conformément au Code du Numérique en République du Bénin, les traitements de données à caractère personnel réalisés sur la plateforme sont déclarés et conformes aux exigences de l'Autorité de Protection des Données Personnelles (APDP).
+              Conformément au Code du Numérique en République du Bénin, LegalDoc BJ SARL s'engage fermement à respecter les principes de protection des données à caractère personnel et poursuit sa démarche de déclaration et de mise en conformité continue auprès de l'Autorité de Protection des Données Personnelles (APDP).
             </p>
           </section>
         </div>

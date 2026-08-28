@@ -1,9 +1,7 @@
 import { db } from "@/lib/db"
 import {
-  user,
   documentType,
   documentField,
-  company,
   resourceArticle,
   legalTemplate,
 } from "@/lib/db/schema"
@@ -12,32 +10,32 @@ export async function seedDatabase() {
   console.log("Seeding database...")
 
   // Seed Document Types
-  const existingDocTypes = await db.select().from(documentType)
-  if (existingDocTypes.length === 0) {
-    const [casier] = await db
-      .insert(documentType)
-      .values({
-        name: "Casier Judiciaire (Bulletin n°3)",
-        slug: "casier-judiciaire",
-        description: "Extrait du casier judiciaire délivré par le Ministère de la Justice du Bénin.",
-        category: "Administratif",
-        price: 5000,
-        createdBy: "system",
-      })
-      .returning()
+  const [creation] = await db
+    .insert(documentType)
+    .values({
+      name: "Création d'Entreprise (SARL / SUARL / Établissement)",
+      slug: "creation-entreprise",
+      description: "Pack complet d'immatriculation au RCCM, obtention du N° IFU, déclaration d'établissement et affichage légal.",
+      category: "Création d'entreprise",
+      price: 50000,
+      createdBy: "system",
+    })
+    .onConflictDoNothing({ target: documentType.slug })
+    .returning()
 
-    const [creation] = await db
-      .insert(documentType)
-      .values({
-        name: "Création d'Entreprise (SARL / SUARL / Établissement)",
-        slug: "creation-entreprise",
-        description: "Pack complet d'immatriculation au RCCM, obtention du N° IFU, déclaration d'établissement et affichage légal.",
-        category: "Création d'entreprise",
-        price: 50000,
-        createdBy: "system",
-      })
-      .returning()
+  await db
+    .insert(documentType)
+    .values({
+      name: "Casier Judiciaire (Bulletin n°3)",
+      slug: "casier-judiciaire",
+      description: "Extrait du casier judiciaire délivré par le Ministère de la Justice du Bénin.",
+      category: "Administratif",
+      price: 5000,
+      createdBy: "system",
+    })
+    .onConflictDoNothing({ target: documentType.slug })
 
+  if (creation) {
     // Fields for creation
     await db.insert(documentField).values([
       {
@@ -76,8 +74,8 @@ export async function seedDatabase() {
     ])
   }
 
-  // Seed Resources & Legal Templates
-  const existingArticles = await db.select().from(resourceArticle)
+  // Seed Resources
+  const existingArticles = await db.select().from(resourceArticle).limit(1)
   if (existingArticles.length === 0) {
     await db.insert(resourceArticle).values([
       {
@@ -93,6 +91,29 @@ export async function seedDatabase() {
         category: "Fiscalité",
         summary: "Découvrez quel régime fiscal convient à votre chiffre d'affaires et évitez les redressements.",
         content: "Analyse comparative des régimes d'imposition applicables aux PME en République du Bénin...",
+      },
+    ])
+  }
+
+  // Seed Legal Templates
+  const existingTemplates = await db.select().from(legalTemplate).limit(1)
+  if (existingTemplates.length === 0) {
+    await db.insert(legalTemplate).values([
+      {
+        title: "Statuts Constitutifs SARL / SUARL (OHADA)",
+        category: "Statuts",
+        description: "Modèle complet de statuts conforme au droit des sociétés commerciales OHADA applicable au Bénin.",
+        content: "ARTICLE 1 : FORME JURIDIQUE...",
+        isFree: true,
+        price: 0,
+      },
+      {
+        title: "Contrat de Prestation de Services",
+        category: "Contrats",
+        description: "Contrat cadre commercial de prestation de services entre entreprises ou prestataires indépendants.",
+        content: "CONTRAT DE PRESTATION DE SERVICES...",
+        isFree: true,
+        price: 0,
       },
     ])
   }

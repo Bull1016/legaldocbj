@@ -1,8 +1,8 @@
 import { db } from "@/lib/db"
-import { payment, request } from "@/lib/db/schema"
+import { payment, request, user } from "@/lib/db/schema"
 import { createAuditLog } from "@/lib/audit"
 import { sendEmail } from "@/lib/email"
-import { eq } from "drizzle-orm"
+import { eq, and, ne } from "drizzle-orm"
 
 export async function createFedaPayTransaction({
   userId,
@@ -25,7 +25,7 @@ export async function createFedaPayTransaction({
   const environment = process.env.FEDAPAY_ENVIRONMENT || "sandbox"
   const baseUrl = environment === "live" ? "https://api.fedapay.com/v1" : "https://sandbox-api.fedapay.com/v1"
 
-  const reference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  const reference = `PAY-${crypto.randomUUID()}`
 
   // Insert payment record into DB
   const [newPayment] = await db.insert(payment).values({
@@ -38,6 +38,13 @@ export async function createFedaPayTransaction({
     provider: "fedapay",
     status: "pending",
   }).returning()
+
+  if (environment === "live" && !secretKey) {
+    return {
+      success: false,
+      error: "FEDAPAY_SECRET_KEY manquant en environnement de production",
+    }
+  }
 
   if (secretKey) {
     try {
@@ -91,8 +98,16 @@ export async function createFedaPayTransaction({
           }
         }
       }
+      return {
+        success: false,
+        error: "Échec de la création de la transaction FedaPay",
+      }
     } catch (err) {
       console.error("FedaPay API error:", err)
+      return {
+        success: false,
+        error: "Erreur réseau FedaPay",
+      }
     }
   }
 
@@ -109,26 +124,37 @@ export async function processPaymentSuccess({
   reference,
   transactionId,
   mode,
+  amount,
 }: {
   reference: string
   transactionId?: string
   mode?: string
+  amount?: number
 }) {
   const [existingPayment] = await db.select().from(payment).where(eq(payment.reference, reference))
   if (!existingPayment) {
     throw new Error("Paiement non trouvé")
   }
 
-  if (existingPayment.status === "approved") {
-    return { success: true, message: "Paiement déjà validé" }
+  if (amount !== undefined && amount !== existingPayment.amount) {
+    throw new Error("Le montant du paiement ne correspond pas")
   }
 
-  await db.update(payment).set({
-    status: "approved",
-    transactionId: transactionId || existingPayment.transactionId,
-    mode: mode || "Mobile Money / Carte",
-    updatedAt: new Date(),
-  }).where(eq(payment.id, existingPayment.id))
+  // Atomically update only if status is not 'approved'
+  const updatedRows = await db
+    .update(payment)
+    .set({
+      status: "approved",
+      transactionId: transactionId || existingPayment.transactionId,
+      mode: mode || "Mobile Money / Carte",
+      updatedAt: new Date(),
+    })
+    .where(and(eq(payment.reference, reference), ne(payment.status, "approved")))
+    .returning()
+
+  if (updatedRows.length === 0) {
+    return { success: true, message: "Paiement déjà validé" }
+  }
 
   if (existingPayment.requestId) {
     await db.update(request).set({
@@ -146,12 +172,15 @@ export async function processPaymentSuccess({
     details: { reference, amount: existingPayment.amount },
   })
 
-  // Send email confirmation
-  await sendEmail({
-    to: "client@example.com", // will be dynamically loaded if user email exists
-    subject: `Confirmation de votre paiement - Ref: ${reference}`,
-    html: `<p>Votre paiement de <strong>${existingPayment.amount.toLocaleString()} XOF</strong> a bien été reçu et validé par LegalDoc BJ.</p><p>Merci de votre confiance !</p>`,
-  })
+  // Load actual user email
+  const [userRecord] = await db.select().from(user).where(eq(user.id, existingPayment.userId))
+  if (userRecord && userRecord.email) {
+    await sendEmail({
+      to: userRecord.email,
+      subject: `Confirmation de votre paiement - Ref: ${reference}`,
+      html: `<p>Votre paiement de <strong>${existingPayment.amount.toLocaleString()} XOF</strong> a bien été reçu et validé par LegalDoc BJ.</p><p>Merci de votre confiance !</p>`,
+    })
+  }
 
   return { success: true, message: "Paiement validé avec succès" }
 }

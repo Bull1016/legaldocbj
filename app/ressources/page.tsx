@@ -3,14 +3,23 @@ import { resourceArticle } from "@/lib/db/schema"
 import { SiteHeader } from "@/components/site-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Calendar, ArrowRight, Tag } from "lucide-react"
+import { eq, and } from "drizzle-orm"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
 export default async function RessourcesPage() {
   let dbArticles: Array<typeof resourceArticle.$inferSelect> = []
   try {
-    dbArticles = await db.select().from(resourceArticle)
+    dbArticles = await db
+      .select()
+      .from(resourceArticle)
+      .where(and(eq(resourceArticle.published, true), eq(resourceArticle.country, "BJ")))
   } catch (e) {
+    console.error("Erreur lors de la récupération des articles de ressources:", {
+      message: e instanceof Error ? e.message : String(e),
+      timestamp: new Date().toISOString(),
+    })
     dbArticles = []
   }
 
@@ -73,9 +82,12 @@ export default async function RessourcesPage() {
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" /> {new Date(art.createdAt).toLocaleDateString("fr-FR")}
                 </span>
-                <span className="text-emerald-600 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                <Link
+                  href={`/ressources/${art.slug}`}
+                  className="text-emerald-600 font-bold hover:underline flex items-center gap-1"
+                >
                   Lire la suite <ArrowRight className="w-3.5 h-3.5" />
-                </span>
+                </Link>
               </CardContent>
             </Card>
           ))}

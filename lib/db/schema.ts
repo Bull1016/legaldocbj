@@ -5,6 +5,7 @@ import {
   boolean,
   serial,
   integer,
+  index,
 } from "drizzle-orm/pg-core"
 
 // ---------------------------------------------------------------------------
@@ -136,52 +137,71 @@ export const requestEvent = pgTable("request_event", {
 })
 
 // Companies registered or managed on the platform.
-export const company = pgTable("company", {
-  id: serial("id").primaryKey(),
-  userId: text("userId").notNull(),
-  name: text("name").notNull(),
-  legalForm: text("legalForm").notNull(), // SARL, SUARL, SAS, Établissement, SA, GIE
-  rccm: text("rccm"),
-  ifu: text("ifu"),
-  capital: integer("capital").default(0),
-  address: text("address"),
-  city: text("city").default("Cotonou"),
-  country: text("country").notNull().default("BJ"),
-  status: text("status").notNull().default("active"), // in_creation | active | dissolved
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-})
+export const company = pgTable(
+  "company",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("userId").notNull(),
+    name: text("name").notNull(),
+    legalForm: text("legalForm").notNull(), // SARL, SUARL, SAS, Établissement, SA, GIE
+    rccm: text("rccm"),
+    ifu: text("ifu"),
+    capital: integer("capital").default(0),
+    address: text("address"),
+    city: text("city").default("Cotonou"),
+    country: text("country").notNull().default("BJ"),
+    status: text("status").notNull().default("active"), // in_creation | active | dissolved
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("company_user_id_idx").on(table.userId),
+  ]
+)
 
 // Payment transactions (FedaPay, Mobile Money, Card)
-export const payment = pgTable("payment", {
-  id: serial("id").primaryKey(),
-  reference: text("reference").notNull().unique(),
-  userId: text("userId").notNull(),
-  requestId: integer("requestId"),
-  subscriptionId: integer("subscriptionId"),
-  amount: integer("amount").notNull(), // in XOF
-  currency: text("currency").notNull().default("XOF"),
-  provider: text("provider").notNull().default("fedapay"),
-  transactionId: text("transactionId"), // External FedaPay Transaction ID
-  status: text("status").notNull().default("pending"), // pending | approved | declined | canceled
-  mode: text("mode"), // mtm, moov, card, etc.
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-})
+export const payment = pgTable(
+  "payment",
+  {
+    id: serial("id").primaryKey(),
+    reference: text("reference").notNull().unique(),
+    userId: text("userId").notNull(),
+    requestId: integer("requestId").references(() => request.id, { onDelete: "set null" }),
+    subscriptionId: integer("subscriptionId"),
+    amount: integer("amount").notNull(), // in XOF
+    currency: text("currency").notNull().default("XOF"),
+    provider: text("provider").notNull().default("fedapay"),
+    transactionId: text("transactionId"), // External FedaPay Transaction ID
+    status: text("status").notNull().default("pending"), // pending | approved | declined | canceled
+    mode: text("mode"), // mtm, moov, card, etc.
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("payment_user_id_idx").on(table.userId),
+    index("payment_transaction_id_idx").on(table.transactionId),
+  ]
+)
 
 // Audit log for security & compliance
-export const auditLog = pgTable("audit_log", {
-  id: serial("id").primaryKey(),
-  actorId: text("actorId").notNull(),
-  actorName: text("actorName"),
-  actorRole: text("actorRole").notNull(),
-  action: text("action").notNull(), // e.g. "USER_ROLE_UPDATED", "DOCUMENT_SUBMITTED", "PAYMENT_RECEIVED"
-  entityType: text("entityType").notNull(), // "user", "request", "company", "payment"
-  entityId: text("entityId"),
-  details: text("details"), // JSON or string
-  ipAddress: text("ipAddress"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-})
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: serial("id").primaryKey(),
+    actorId: text("actorId").notNull(),
+    actorName: text("actorName"),
+    actorRole: text("actorRole").notNull(),
+    action: text("action").notNull(), // e.g. "USER_ROLE_UPDATED", "DOCUMENT_SUBMITTED", "PAYMENT_RECEIVED"
+    entityType: text("entityType").notNull(), // "user", "request", "company", "payment"
+    entityId: text("entityId"),
+    details: text("details"), // JSON or string
+    ipAddress: text("ipAddress"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("audit_log_entity_idx").on(table.entityType, table.entityId),
+  ]
+)
 
 // Legal document templates (statuts, contrats, PV)
 export const legalTemplate = pgTable("legal_template", {
@@ -212,29 +232,45 @@ export const legalAdvice = pgTable("legal_advice", {
 })
 
 // Corporate & Legal obligations calendar/tracking
-export const obligation = pgTable("obligation", {
-  id: serial("id").primaryKey(),
-  companyId: integer("companyId").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  dueDate: timestamp("dueDate").notNull(),
-  category: text("category").notNull().default("Fiscale"), // Fiscale | Sociale | Juridique
-  status: text("status").notNull().default("pending"), // pending | completed | overdue
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-})
+export const obligation = pgTable(
+  "obligation",
+  {
+    id: serial("id").primaryKey(),
+    companyId: integer("companyId")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    dueDate: timestamp("dueDate").notNull(),
+    category: text("category").notNull().default("Fiscale"), // Fiscale | Sociale | Juridique
+    status: text("status").notNull().default("pending"), // pending | completed | overdue
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("obligation_company_id_idx").on(table.companyId),
+  ]
+)
 
 // Corporate Subscriptions (Secrétariat Juridique / Pack Entreprise)
-export const subscription = pgTable("subscription", {
-  id: serial("id").primaryKey(),
-  companyId: integer("companyId").notNull(),
-  userId: text("userId").notNull(),
-  plan: text("plan").notNull(), // "starter" | "pro" | "enterprise"
-  status: text("status").notNull().default("active"), // active | canceled | expired
-  price: integer("price").notNull().default(0), // XOF per month
-  startDate: timestamp("startDate").notNull().defaultNow(),
-  endDate: timestamp("endDate"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-})
+export const subscription = pgTable(
+  "subscription",
+  {
+    id: serial("id").primaryKey(),
+    companyId: integer("companyId")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    userId: text("userId").notNull(),
+    plan: text("plan").notNull(), // "starter" | "pro" | "enterprise"
+    status: text("status").notNull().default("active"), // active | canceled | expired
+    price: integer("price").notNull().default(0), // XOF per month
+    startDate: timestamp("startDate").notNull().defaultNow(),
+    endDate: timestamp("endDate"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("subscription_company_id_idx").on(table.companyId),
+  ]
+)
 
 // Resources & Blog articles
 export const resourceArticle = pgTable("resource_article", {

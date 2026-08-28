@@ -2,6 +2,13 @@
 
 import * as React from "react"
 
+interface RadioGroupContextValue {
+  value?: string
+  onValueChange?: (val: string) => void
+}
+
+const RadioGroupContext = React.createContext<RadioGroupContextValue>({})
+
 export function RadioGroup({
   value,
   onValueChange,
@@ -14,17 +21,11 @@ export function RadioGroup({
   className?: string
 }) {
   return (
-    <div className={className} role="radiogroup">
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            groupValue: value,
-            onGroupChange: onValueChange,
-          })
-        }
-        return child
-      })}
-    </div>
+    <RadioGroupContext.Provider value={{ value, onValueChange }}>
+      <div className={className} role="radiogroup">
+        {children}
+      </div>
+    </RadioGroupContext.Provider>
   )
 }
 
@@ -41,14 +42,18 @@ export function RadioGroupItem({
   onGroupChange?: (val: string) => void
   className?: string
 }) {
-  const isChecked = groupValue === value
+  const context = React.useContext(RadioGroupContext)
+  const activeValue = groupValue !== undefined ? groupValue : context.value
+  const activeOnChange = onGroupChange !== undefined ? onGroupChange : context.onValueChange
+  const isChecked = activeValue === value
+
   return (
     <input
       type="radio"
       id={id}
       value={value}
       checked={isChecked}
-      onChange={() => onGroupChange && onGroupChange(value)}
+      onChange={() => activeOnChange && activeOnChange(value)}
       className={`h-4 w-4 cursor-pointer text-emerald-600 accent-emerald-600 focus:ring-emerald-500 ${className || ""}`}
     />
   )

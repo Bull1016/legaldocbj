@@ -1,7 +1,9 @@
 import { betterAuth } from 'better-auth'
+import { twoFactor } from 'better-auth/plugins'
 import { pool } from '@/lib/db'
 
 export const auth = betterAuth({
+  plugins: [twoFactor()],
   database: pool,
   baseURL:
     process.env.BETTER_AUTH_URL ??
