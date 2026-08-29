@@ -48,7 +48,7 @@ const QUESTIONS = [
 export default function QuizFormeJuridiquePage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [result, setResult] = useState<{ form: string; title: string; desc: string; link: string } | null>(null)
+  const [result, setResult] = useState<{ form: string; title: string; desc: string; forme: string } | null>(null)
 
   function handleSelect(val: string) {
     setAnswers({ ...answers, [QUESTIONS[currentStep].id]: val })
@@ -71,21 +71,21 @@ export default function QuizFormeJuridiquePage() {
           form: "Établissement (Entreprise Individuelle)",
           title: "Établissement / Établissement Personnel",
           desc: "Idéal pour débuter rapidement avec une structure très simple, sans exigence de capital minimum, parfait pour les commerçants et prestataires solo.",
-          link: "/services/creation-entreprise",
+          forme: "Établissement",
         })
       } else if (investment === "yes") {
         setResult({
           form: "SASU (Société par Actions Simplifiée Unipersonnelle)",
           title: "SASU (OHADA)",
           desc: "Excellente flexibilité statutaire pour un entrepreneur solo ambitionnant d'accueillir rapidement des investisseurs.",
-          link: "/services/creation-entreprise",
+          forme: "SASU",
         })
       } else {
         setResult({
           form: "SUARL (SARL Unipersonnelle)",
           title: "SUARL (OHADA)",
           desc: "La forme juridique la plus populaire et sécurisante au Bénin pour un associé unique. Votre responsabilité est strictement limitée à vos apports.",
-          link: "/services/creation-entreprise",
+          forme: "SUARL",
         })
       }
     } else {
@@ -94,14 +94,14 @@ export default function QuizFormeJuridiquePage() {
           form: "SAS (Société par Actions Simplifiée) ou SA",
           title: "SAS / SA (OHADA)",
           desc: "Parfaitement adaptée pour les projets d'envergure, les startups en levée de fonds et les entreprises cherchant une gouvernance sur-mesure.",
-          link: "/services/creation-entreprise",
+          forme: "SAS",
         })
       } else {
         setResult({
           form: "SARL (Société à Responsabilité Limitée)",
           title: "SARL Pluripersonnelle (OHADA)",
           desc: "Le cadre de référence récurant pour les PME béninoises entre plusieurs associés, offrant une protection juridique équilibrée.",
-          link: "/services/creation-entreprise",
+          forme: "SARL",
         })
       }
     }
@@ -116,29 +116,29 @@ export default function QuizFormeJuridiquePage() {
   const currentQ = QUESTIONS[currentStep]
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-semibold mb-3">
-            <HelpCircle className="w-4 h-4 text-amber-700" /> Assistant d'Orientation Juridique
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-warning/15 text-warning-foreground rounded-full text-xs font-semibold mb-3 border border-warning/30">
+            <HelpCircle className="w-4 h-4" /> Assistant d'Orientation Juridique
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Quel statut juridique choisir ?</h1>
-          <p className="text-slate-600 mt-2 text-sm">
+          <h1 className="text-3xl font-extrabold text-foreground">Quel statut juridique choisir ?</h1>
+          <p className="text-muted-foreground mt-2 text-sm">
             Répondez à 4 questions simples pour identifier la forme juridique la plus adaptée à votre projet au Bénin (Droit OHADA).
           </p>
         </div>
 
         {!result ? (
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="bg-slate-900 text-white rounded-t-xl py-5">
-              <div className="flex justify-between items-center text-xs text-slate-300 font-medium">
+          <Card className="shadow-sm">
+            <CardHeader className="bg-sidebar text-sidebar-foreground rounded-t-xl py-5">
+              <div className="flex justify-between items-center text-xs text-sidebar-foreground/60 font-medium">
                 <span>Question {currentStep + 1} sur {QUESTIONS.length}</span>
                 <span>{Math.round(((currentStep + 1) / QUESTIONS.length) * 100)}%</span>
               </div>
-              <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div className="w-full bg-sidebar-border h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-full transition-all duration-300"
+                  className="bg-success h-full transition-all duration-300"
                   style={{ width: `${((currentStep + 1) / QUESTIONS.length) * 100}%` }}
                 />
               </div>
@@ -151,20 +151,20 @@ export default function QuizFormeJuridiquePage() {
                     key={opt.value}
                     className={`flex items-center space-x-3 p-4 rounded-xl border transition-all cursor-pointer ${
                       answers[currentQ.id] === opt.value
-                        ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-600"
-                        : "border-slate-200 hover:border-slate-300 bg-white"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border hover:border-muted-foreground/40 bg-card"
                     }`}
                     onClick={() => handleSelect(opt.value)}
                   >
-                    <RadioGroupItem value={opt.value} id={opt.value} className="text-emerald-600" />
-                    <Label htmlFor={opt.value} className="text-slate-800 text-sm font-medium cursor-pointer flex-1">
+                    <RadioGroupItem value={opt.value} id={opt.value} />
+                    <Label htmlFor={opt.value} className="text-foreground text-sm font-medium cursor-pointer flex-1">
                       {opt.label}
                     </Label>
                   </div>
                 ))}
               </RadioGroup>
             </CardContent>
-            <CardFooter className="bg-slate-50 border-t p-4 flex justify-between rounded-b-xl">
+            <CardFooter className="bg-muted/40 border-t p-4 flex justify-between rounded-b-xl">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
@@ -175,38 +175,38 @@ export default function QuizFormeJuridiquePage() {
               <Button
                 onClick={handleNext}
                 disabled={!answers[currentQ.id]}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {currentStep === QUESTIONS.length - 1 ? "Voir le résultat" : "Suivant"} <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </CardFooter>
           </Card>
         ) : (
-          <Card className="border-emerald-200 shadow-md bg-white">
-            <CardHeader className="bg-emerald-700 text-white rounded-t-xl text-center py-8">
-              <Building2 className="w-12 h-12 text-emerald-200 mx-auto mb-2" />
+          <Card className="border-primary/30 shadow-md bg-card">
+            <CardHeader className="bg-primary text-primary-foreground rounded-t-xl text-center py-8">
+              <Building2 className="w-12 h-12 text-primary-foreground/60 mx-auto mb-2" />
               <CardTitle className="text-2xl font-bold">Statut Recommandé : {result.title}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-slate-800">
+              <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 text-foreground">
                 <p className="font-medium text-sm leading-relaxed">{result.desc}</p>
               </div>
-              <div className="space-y-2 text-xs text-slate-600">
+              <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   <span>Conforme à la législation OHADA en République du Bénin</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   <span>Obtention rapide du RCCM, IFU et numéro CNSS</span>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="p-6 bg-slate-50 border-t flex flex-col gap-3 rounded-b-xl">
-              <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base font-bold rounded-xl">
-                <Link href="/dashboard/nouvelle-demande">Lancer la création de mon entreprise</Link>
-              </Button>
-              <Button variant="ghost" onClick={handleReset} className="text-xs text-slate-600 flex items-center justify-center gap-1">
+            <CardFooter className="p-6 bg-muted/40 border-t flex flex-col gap-3 rounded-b-xl">
+              <Button
+                render={<Link href={`/dashboard/nouvelle-demande?forme=${result.forme}`}>Lancer la création de mon entreprise</Link>}
+                className="w-full py-6 text-base font-bold rounded-xl"
+              />
+              <Button variant="ghost" onClick={handleReset} className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                 <RotateCcw className="w-3.5 h-3.5" /> Recommencer le test
               </Button>
             </CardFooter>

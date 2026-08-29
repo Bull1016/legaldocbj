@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/session"
 import { isStaff, isAdmin, ROLE_LABELS } from "@/lib/roles"
 import { Logo } from "@/components/brand"
 import { UserMenu } from "@/components/user-menu"
+import { AdminNav, AdminNavMobile } from "@/components/admin-nav"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser()
@@ -33,29 +34,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Sidebar de l'Admin */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-slate-900 text-slate-100 md:flex">
-        <div className="flex h-16 items-center border-b border-slate-800 px-5">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+        <div className="flex h-16 items-center border-b border-sidebar-border px-5">
           <Link href="/" aria-label="Accueil">
-            <Logo className="text-white [&_span]:text-white" />
+            <Logo className="text-sidebar-foreground [&_span]:text-sidebar-foreground" />
           </Link>
         </div>
 
-        <div className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <div className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
           Espace Professionnel
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {adminNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-slate-300 hover:bg-slate-800 hover:text-white"
-            >
-              <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <AdminNav items={adminNav} />
       </aside>
 
       {/* Main Content Area */}
@@ -73,16 +63,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         {/* Navigation mobile */}
         <div className="flex gap-1 overflow-x-auto border-b border-border bg-card px-4 py-2 md:hidden">
-          {adminNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <item.icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
-            </Link>
-          ))}
+          <AdminNavMobile items={adminNav} />
           <Link
             href="/dashboard"
             className="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground ml-auto border-l pl-3"
@@ -92,7 +73,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
 
-        <main className="flex-1 p-4 md:p-6 bg-slate-50/50">{children}</main>
+        <main className="flex-1 p-4 md:p-6 bg-background">{children}</main>
       </div>
     </div>
   )

@@ -46,7 +46,7 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
   const [slug, setSlug] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [priceInEuros, setPriceInEuros] = useState("0")
+  const [priceXOF, setPriceXOF] = useState("0")
   const [active, setActive] = useState(true)
 
   function openCreate() {
@@ -55,7 +55,7 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
     setSlug("")
     setDescription("")
     setCategory("")
-    setPriceInEuros("0")
+    setPriceXOF("0")
     setActive(true)
     setFormOpen(true)
   }
@@ -66,7 +66,7 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
     setSlug(item.slug)
     setDescription(item.description ?? "")
     setCategory(item.category ?? "")
-    setPriceInEuros((item.price / 100).toString())
+    setPriceXOF(item.price.toString())
     setActive(item.active)
     setFormOpen(true)
   }
@@ -102,8 +102,8 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
       return
     }
 
-    const priceCents = Math.round(parseFloat(priceInEuros) * 100)
-    if (isNaN(priceCents) || priceCents < 0) {
+    const priceValue = Math.round(parseFloat(priceXOF))
+    if (isNaN(priceValue) || priceValue < 0) {
       toast.error("Le prix doit être un nombre positif.")
       return
     }
@@ -116,7 +116,7 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
           slug,
           description,
           category,
-          price: priceCents,
+          price: priceValue,
           active,
         })
         toast.success("Démarche mise à jour !")
@@ -126,7 +126,7 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
           slug,
           description,
           category,
-          price: priceCents,
+          price: priceValue,
           active,
         })
         toast.success("Démarche créée avec succès !")
@@ -158,9 +158,9 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
 
       {/* Formulaire de création / édition */}
       {formOpen && (
-        <Card className="p-6 border-slate-300">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4 border-b pb-3">
-            <h3 className="font-serif text-xl font-bold text-slate-900">
+            <h3 className="font-serif text-xl font-bold text-foreground">
               {editingId ? "Modifier la démarche" : "Créer une nouvelle démarche"}
             </h3>
             <Button variant="ghost" size="sm" onClick={closeForm}>
@@ -203,14 +203,15 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="demarche-price">Tarif public (en €)</Label>
+                <Label htmlFor="demarche-price">Tarif public (en FCFA)</Label>
                 <Input
                   id="demarche-price"
                   type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={priceInEuros}
-                  onChange={(e) => setPriceInEuros(e.target.value)}
+                  step="1"
+                  min="0"
+                  placeholder="Ex: 50000"
+                  value={priceXOF}
+                  onChange={(e) => setPriceXOF(e.target.value)}
                   required
                 />
               </div>
@@ -260,31 +261,31 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
           </div>
         ) : (
           <Table>
-            <TableHeader className="bg-slate-50">
+            <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="pl-6 font-semibold text-slate-700">Nom de la démarche</TableHead>
-                <TableHead className="font-semibold text-slate-700">Catégorie</TableHead>
-                <TableHead className="font-semibold text-slate-700">Tarif</TableHead>
-                <TableHead className="font-semibold text-slate-700">Champs requis</TableHead>
-                <TableHead className="font-semibold text-slate-700">Statut</TableHead>
-                <TableHead className="pr-6 text-right font-semibold text-slate-700">Actions</TableHead>
+                <TableHead className="pl-6 font-semibold text-muted-foreground">Nom de la démarche</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Catégorie</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Tarif</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Champs requis</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Statut</TableHead>
+                <TableHead className="pr-6 text-right font-semibold text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {demarches.map((item) => (
-                <TableRow key={item.id} className="hover:bg-slate-50/50">
+                <TableRow key={item.id} className="hover:bg-muted/30">
                   <TableCell className="pl-6">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-950">{item.name}</span>
+                      <span className="font-semibold text-foreground">{item.name}</span>
                       <span className="text-[10px] font-mono text-muted-foreground mt-0.5">/{item.slug}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-1 rounded">
+                    <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
                       {item.category ?? "Général"}
                     </span>
                   </TableCell>
-                  <TableCell className="font-medium text-slate-900">
+                  <TableCell className="font-medium text-foreground">
                     {formatPrice(item.price)}
                   </TableCell>
                   <TableCell className="text-sm text-slate-600">
@@ -300,11 +301,11 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
                   </TableCell>
                   <TableCell>
                     {item.active ? (
-                      <span className="text-xs font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-success/10 text-success rounded border border-success/30">
                         Active
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-muted text-muted-foreground rounded border border-border">
                         Inactive
                       </span>
                     )}
@@ -320,15 +321,15 @@ export function DemarchesManager({ initialDemarches }: { initialDemarches: DocTy
                         <Edit2 className="h-3.5 w-3.5" /> Modifier
                       </Button>
                       <Button
-                        asChild
+                        render={
+                          <Link href={`/admin/demarches/${item.id}/champs`}>
+                            <Sliders className="h-3.5 w-3.5" /> Configurer les champs
+                          </Link>
+                        }
                         size="sm"
                         variant="outline"
                         className="gap-1.5 h-8 text-xs"
-                      >
-                        <Link href={`/admin/demarches/${item.id}/champs`}>
-                          <Sliders className="h-3.5 w-3.5" /> Configurer les champs
-                        </Link>
-                      </Button>
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
