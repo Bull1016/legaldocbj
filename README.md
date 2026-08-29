@@ -67,27 +67,39 @@ Les permissions de sécurité sont centralisées dans `lib/roles.ts` :
 ## ⚙️ Configuration & Installation
 
 ### 1. Variables d'environnement
-Créez un fichier `.env` à la racine du projet et définissez les clés suivantes :
+Créez un fichier `.env` à la racine du projet (sur la base de `.env.exemple`) et définissez l'ensemble des clés suivantes :
 
 ```env
+# Environnement & URL de l'application
+NODE_ENV="development"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
 # Connexion à la base de données PostgreSQL
 DATABASE_URL="postgres://utilisateur:motdepasse@localhost:5432/nom_base"
 
-# Clé de chiffrement Better Auth
+# Authentification (Better Auth)
 BETTER_AUTH_SECRET="une_cle_secrete_tres_longue_et_aleatoire"
-
-# URL de l'application
 BETTER_AUTH_URL="http://localhost:3000"
 
-# Jeton d'un store Vercel Blob configuré en accès privé
+# Identifiants de l'administrateur initial
+ADMIN_MAIL="admin@legaldoc.bj"
+ADMIN_PASS="mot_de_passe_admin_securise"
+
+# Vercel Blob (Téléversement de documents)
+BLOB_STORE_ID="votre_store_id"
 BLOB_READ_WRITE_TOKEN="votre_token_vercel_blob"
 
-# FedaPay (valeurs autorisées : sandbox ou live)
-FEDAPAY_ENVIRONMENT="sandbox"
-FEDAPAY_SECRET_KEY="votre_cle_secrete_fedapay"
+# Configuration FedaPay (Paiements Mobile Money / Carte)
+FEDAPAY_ENVIRONMENT="sandbox" # "sandbox" ou "live"
+FEDAPAY_SECRET_KEY="sk_sandbox_votre_cle_secrete"
+FEDAPAY_WEBHOOK_SECRET="wh_votre_cle_secrete_webhook"
 
-# Authentifie l'appel quotidien de la tâche de conservation Vercel Cron
-CRON_SECRET="une_valeur_longue_et_aleatoire"
+# Service d'envoi d'e-mails (Resend - Optionnel, fallback console si non renseigné)
+RESEND_API_KEY="re_votre_cle_api_resend"
+EMAIL_FROM="LegalDoc BJ <noreply@legaldoc.bj>"
+
+# Tâches récurrentes (Vercel Cron - Rétention de données)
+CRON_SECRET="une_valeur_secrete_longue_et_aleatoire"
 ```
 
 ### 2. Lancer le projet localement
