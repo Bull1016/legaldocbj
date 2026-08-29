@@ -16,10 +16,11 @@ const clientNav = [
 export default async function NewRequestPage({
   searchParams,
 }: {
-  searchParams: Promise<{ service?: string }>
+  searchParams: Promise<{ service?: string; forme?: string }>
 }) {
   const user = (await getSessionUser())!
-  const { service: slug } = await searchParams
+  const { service, forme } = await searchParams
+  const slug = service ?? (forme ? "creation-entreprise" : undefined)
 
   const selected = slug ? await getDocumentTypeBySlug(slug) : null
 
@@ -54,7 +55,7 @@ export default async function NewRequestPage({
           )}
 
           <Card className="mt-6 max-w-2xl p-6">
-            <FormLoader documentTypeId={selected.id} />
+            <FormLoader documentTypeId={selected.id} legalForm={forme} />
           </Card>
         </>
       )}
@@ -80,7 +81,13 @@ async function ServicePicker() {
   )
 }
 
-async function FormLoader({ documentTypeId }: { documentTypeId: number }) {
+async function FormLoader({ documentTypeId, legalForm }: { documentTypeId: number; legalForm?: string }) {
   const fields = await getFieldsForDocumentType(documentTypeId)
-  return <RequestForm documentTypeId={documentTypeId} fields={fields} />
+  return (
+    <RequestForm
+      documentTypeId={documentTypeId}
+      fields={fields}
+      initialValues={legalForm ? { legal_form: legalForm } : undefined}
+    />
+  )
 }

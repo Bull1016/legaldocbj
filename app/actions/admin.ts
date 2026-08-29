@@ -263,10 +263,14 @@ export async function adminCreateDocumentType(input: {
   slug: string
   description?: string
   category?: string
-  price: number // in cents
+  price: number // in XOF
   active: boolean
 }) {
   const me = await requireAdmin()
+
+  if (!Number.isInteger(input.price) || input.price < 0) {
+    throw new Error("Le prix doit être un nombre entier positif ou nul.")
+  }
 
   // Verify slug uniqueness
   const [existing] = await db
@@ -311,6 +315,10 @@ export async function adminUpdateDocumentType(
   }
 ) {
   await requireAdmin()
+
+  if (!Number.isInteger(input.price) || input.price < 0) {
+    throw new Error("Le prix doit être un nombre entier positif ou nul.")
+  }
 
   // Verify slug uniqueness against other types
   const list = await db.select().from(documentType).where(eq(documentType.slug, input.slug))

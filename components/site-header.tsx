@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { Logo } from "@/components/brand"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, X } from "lucide-react"
+import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
@@ -35,6 +35,7 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={pathname === link.href ? "page" : undefined}
               className={cn(
                 "transition-colors hover:text-foreground font-medium",
                 pathname === link.href && "text-foreground"
@@ -78,9 +79,6 @@ export function SiteHeader() {
                 <Link href="/" onClick={() => setOpen(false)} aria-label="Accueil">
                   <Logo />
                 </Link>
-                <Button variant="ghost" size="sm" onClick={() => setOpen(false)} aria-label="Fermer le menu">
-                  <X className="h-5 w-5" />
-                </Button>
               </div>
               <nav className="flex flex-col gap-1 p-4" aria-label="Navigation mobile">
                 {NAV_LINKS.map((link) => (
@@ -88,6 +86,7 @@ export function SiteHeader() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
+                    aria-current={pathname === link.href ? "page" : undefined}
                     className={cn(
                       "rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                       pathname === link.href
