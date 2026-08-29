@@ -8,6 +8,7 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  allowedDevOrigins: ["192.168.0.103"],
   typescript: {
     ignoreBuildErrors: true,
   },
