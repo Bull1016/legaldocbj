@@ -124,24 +124,24 @@ export default function ModelesJuridiquesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl">
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold mb-3">
-            <Sparkles className="w-4 h-4 text-emerald-600" /> Modèles Juridiques Personnalisables
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold mb-3 border border-primary/20">
+            <Sparkles className="w-4 h-4" /> Modèles Juridiques Personnalisables
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Bibliothèque de Modèles & Actes Juridiques</h1>
-          <p className="text-slate-600 mt-2 text-sm">
-            Sélectionnez un modèle, renseignez vos informations et téléchargez votre document prêt à l'emploi.
+          <h1 className="text-3xl font-extrabold text-foreground">Bibliothèque de Modèles &amp; Actes Juridiques</h1>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Sélectionnez un modèle, renseignez vos informations et téléchargez votre document prêt à l&apos;emploi.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Template Selection List */}
           <div className="space-y-4">
-            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-emerald-600" /> Modèles Disponibles
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" /> Modèles Disponibles
             </h2>
             {TEMPLATES_DATA.map((tmpl) => (
               <Card
@@ -156,25 +156,25 @@ export default function ModelesJuridiquesPage() {
                     handleSelectTemplate(tmpl)
                   }
                 }}
-                className={`cursor-pointer transition-all border focus:outline-none focus:ring-2 focus:ring-emerald-600 ${
+                className={`cursor-pointer transition-all border focus:outline-none focus:ring-2 focus:ring-primary ${
                   selectedTemplate.id === tmpl.id
-                    ? "border-emerald-600 bg-emerald-50/40 ring-1 ring-emerald-600 shadow-sm"
-                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
+                    : "border-border hover:border-muted-foreground/40 bg-card"
                 }`}
               >
                 <CardHeader className="p-4">
                   <div className="flex justify-between items-start">
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground">
                       {tmpl.category}
                     </span>
                     {tmpl.isFree && (
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full border border-success/30">
                         Gratuit
                       </span>
                     )}
                   </div>
-                  <CardTitle className="text-base font-bold text-slate-900 mt-2">{tmpl.title}</CardTitle>
-                  <CardDescription className="text-xs text-slate-600 line-clamp-2 mt-1">
+                  <CardTitle className="text-base font-bold text-foreground mt-2">{tmpl.title}</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground line-clamp-2 mt-1">
                     {tmpl.description}
                   </CardDescription>
                 </CardHeader>
@@ -184,28 +184,28 @@ export default function ModelesJuridiquesPage() {
 
           {/* Document Editor & Preview */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="bg-slate-900 text-white rounded-t-xl py-5 flex flex-row items-center justify-between">
+            <Card className="shadow-sm">
+              <CardHeader className="bg-sidebar text-sidebar-foreground rounded-t-xl py-5 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-bold">{selectedTemplate.title}</CardTitle>
-                  <CardDescription className="text-slate-300 text-xs mt-1">
-                    Personnalisez les champs ci-dessous pour mettre à jour l'acte.
+                  <CardDescription className="text-sidebar-foreground/60 text-xs mt-1">
+                    Personnalisez les champs ci-dessous pour mettre à jour l&apos;acte.
                   </CardDescription>
                 </div>
-                <Button onClick={handleDownload} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-semibold">
+                <Button onClick={handleDownload} variant="secondary" className="gap-2 font-semibold shrink-0">
                   <Download className="w-4 h-4" /> Télécharger (.txt)
                 </Button>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/40 p-4 rounded-xl border border-border">
                   {selectedTemplate.fields.map((f) => (
                     <div key={f.key} className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700">{f.label}</Label>
+                      <Label className="text-xs font-semibold text-muted-foreground">{f.label}</Label>
                       <Input
                         placeholder={f.placeholder}
                         value={formData[f.key] || ""}
                         onChange={(e) => handleFieldChange(f.key, e.target.value)}
-                        className="bg-white border-slate-300"
+                        className="bg-card"
                       />
                     </div>
                   ))}
@@ -213,13 +213,13 @@ export default function ModelesJuridiquesPage() {
 
                 {/* Realtime Document Text Preview */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-emerald-600" /> Prévisualisation du Document :
+                  <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-success" /> Prévisualisation du Document :
                   </Label>
                   <Textarea
                     readOnly
                     value={previewText || selectedTemplate.templateText}
-                    className="min-h-[350px] font-mono text-xs bg-slate-900 text-slate-100 p-4 rounded-xl leading-relaxed border-none shadow-inner"
+                    className="min-h-[350px] font-mono text-xs bg-sidebar text-sidebar-foreground p-4 rounded-xl leading-relaxed border-none shadow-inner"
                   />
                 </div>
               </CardContent>

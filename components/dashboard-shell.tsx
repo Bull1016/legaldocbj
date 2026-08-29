@@ -1,10 +1,13 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Logo } from "@/components/brand"
 import { UserMenu } from "@/components/user-menu"
 import { ROLE_LABELS } from "@/lib/roles"
+import { cn } from "@/lib/utils"
 import type { SessionUser } from "@/lib/session"
 import type { LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 export type NavItem = {
   href: string
@@ -17,16 +20,18 @@ export function DashboardShell({
   nav,
   title,
   action,
-  currentPath,
   children,
 }: {
   user: SessionUser
   nav: NavItem[]
   title: string
   action?: React.ReactNode
+  /** @deprecated — pass currentPath via DashboardShell no longer needed, usePathname() is used internally */
   currentPath?: string
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Sidebar */}
@@ -36,9 +41,12 @@ export function DashboardShell({
             <Logo className="text-sidebar-foreground [&_span]:text-sidebar-foreground" />
           </Link>
         </div>
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1 p-3" aria-label="Navigation tableau de bord">
           {nav.map((item) => {
-            const active = currentPath === item.href
+            const active =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
@@ -49,6 +57,7 @@ export function DashboardShell({
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
                 )}
+                aria-current={active ? "page" : undefined}
               >
                 <item.icon className="h-4 w-4" aria-hidden="true" />
                 {item.label}
@@ -73,16 +82,28 @@ export function DashboardShell({
 
         {/* Mobile nav */}
         <div className="flex gap-1 overflow-x-auto border-b border-border bg-card px-4 py-2 md:hidden">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <item.icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
-            </Link>
-          ))}
+          {nav.map((item) => {
+            const active =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
+                  active
+                    ? "bg-accent text-accent-foreground font-semibold"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
+                {item.label}
+              </Link>
+            )
+          })}
         </div>
 
         <main className="flex-1 p-4 md:p-6">{children}</main>

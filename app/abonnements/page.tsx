@@ -94,18 +94,22 @@ export default function AbonnementsSolutionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-12 max-w-5xl">
         <div className="text-center mb-12 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-semibold mb-3">
-            <Building className="w-4 h-4 text-amber-700" /> Abonnements Solutions Entreprises
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-warning/15 text-warning rounded-full text-xs font-semibold mb-3 border border-warning/30">
+            <Building className="w-4 h-4" /> Abonnements Solutions Entreprises
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Externalisez votre Secrétariat Juridique</h1>
-          <p className="text-slate-600 mt-2 text-sm">
+          <h1 className="text-3xl font-extrabold text-foreground">Externalisez votre Secrétariat Juridique</h1>
+          <p className="text-muted-foreground mt-2 text-sm">
             Un juriste dédié et une plateforme complète en abonnement mensuel pour assurer la conformité juridique et fiscale permanente de votre entreprise.
           </p>
         </div>
+
+        {errorMsg && (
+          <p className="text-center text-sm text-destructive mb-6 font-medium">{errorMsg}</p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {PLANS.map((p) => {
@@ -115,35 +119,35 @@ export default function AbonnementsSolutionsPage() {
                 key={p.id}
                 className={`flex flex-col justify-between transition-all relative border ${
                   p.highlight
-                    ? "border-emerald-600 shadow-lg ring-2 ring-emerald-600 bg-white"
-                    : "border-slate-200 bg-white shadow-sm"
+                    ? "border-primary shadow-lg ring-2 ring-primary bg-card"
+                    : "border-border bg-card shadow-sm"
                 }`}
               >
                 {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[11px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[11px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
                     Recommandé
                   </div>
                 )}
                 <div>
-                  <CardHeader className="p-6 border-b border-slate-100">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3 text-slate-800">
-                      <IconComp className="w-5 h-5 text-emerald-600" />
+                  <CardHeader className="p-6 border-b border-border">
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-3">
+                      <IconComp className="w-5 h-5 text-primary" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-slate-900">{p.name}</CardTitle>
+                    <CardTitle className="text-xl font-bold text-foreground">{p.name}</CardTitle>
                     <div className="mt-3 flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">{p.price}</span>
-                      <span className="text-xs font-medium text-slate-500">{p.period}</span>
+                      <span className="text-3xl font-black text-foreground">{p.price}</span>
+                      <span className="text-xs font-medium text-muted-foreground">{p.period}</span>
                     </div>
-                    <CardDescription className="text-xs text-slate-600 mt-2 leading-relaxed">
+                    <CardDescription className="text-xs text-muted-foreground mt-2 leading-relaxed">
                       {p.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 space-y-3 text-xs">
-                    <p className="font-bold text-slate-900 mb-1">Inclus dans cette offre :</p>
+                    <p className="font-bold text-foreground mb-1">Inclus dans cette offre :</p>
                     {p.features.map((f, idx) => (
                       <div key={idx} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span className="text-slate-700 leading-tight">{f}</span>
+                        <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground leading-tight">{f}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -152,11 +156,8 @@ export default function AbonnementsSolutionsPage() {
                   <Button
                     onClick={() => handleSubscribe(p.id)}
                     disabled={loadingPlan === p.id}
-                    className={`w-full font-bold py-5 rounded-xl ${
-                      p.highlight
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : "bg-slate-900 hover:bg-slate-800 text-white"
-                    }`}
+                    variant={p.highlight ? "default" : "secondary"}
+                    className="w-full font-bold py-5 rounded-xl"
                   >
                     {loadingPlan === p.id ? (
                       <Loader2 className="w-4 h-4 animate-spin mx-auto" />

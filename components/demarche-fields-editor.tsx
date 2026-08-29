@@ -3,13 +3,19 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Plus, Trash, ArrowLeft, Save, Sliders } from "lucide-react"
+import { Plus, Trash, ArrowLeft, Save, Sliders, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { adminSaveDocumentFields } from "@/app/actions/admin"
 import { FIELD_TYPES } from "@/lib/status"
 import Link from "next/link"
@@ -23,6 +29,19 @@ type FieldItem = {
   options: string
   helpText: string
   sortOrder: number
+}
+
+/** Parse the comma-separated options string into an array of trimmed non-empty strings */
+function parseOptions(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/** Join an array of option strings back into the stored comma-separated format */
+function joinOptions(opts: string[]): string {
+  return opts.join(", ")
 }
 
 export function DemarcheFieldsEditor({
@@ -75,6 +94,21 @@ export function DemarcheFieldsEditor({
 
   function removeField(index: number) {
     setFields((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  /** Add a new chip option to a select field */
+  function addOption(index: number, newOpt: string) {
+    const trimmed = newOpt.trim()
+    if (!trimmed) return
+    const existing = parseOptions(fields[index].options)
+    if (existing.includes(trimmed)) return
+    updateField(index, { options: joinOptions([...existing, trimmed]) })
+  }
+
+  /** Remove a chip option from a select field */
+  function removeOption(index: number, optToRemove: string) {
+    const existing = parseOptions(fields[index].options)
+    updateField(index, { options: joinOptions(existing.filter((o) => o !== optToRemove)) })
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -135,7 +169,7 @@ export function DemarcheFieldsEditor({
       <form onSubmit={handleSave} className="space-y-6">
         {fields.length === 0 ? (
           <Card className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center border-dashed">
-            <Sliders className="h-12 w-12 text-slate-300 mb-3" />
+            <Sliders className="h-12 w-12 text-muted-foreground/30 mb-3" />
             <p className="text-base font-semibold">Aucun champ configuré</p>
             <p className="text-sm mt-1 max-w-sm">
               Cette démarche ne demande actuellement aucune saisie spécifique. Ajoutez des champs pour créer un formulaire personnalisé.
@@ -147,7 +181,7 @@ export function DemarcheFieldsEditor({
         ) : (
           <div className="space-y-4">
             {fields.map((field, idx) => (
-              <Card key={idx} className="p-5 relative border-slate-200">
+              <Card key={idx} className="p-5 relative">
                 <div className="absolute top-4 right-4">
                   <Button
                     type="button"
@@ -160,7 +194,8 @@ export function DemarcheFieldsEditor({
                   </Button>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 pr-10">
+                {/* Responsive grid: 1 col → 2 col at md → 4 col at xl */}
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 pr-10">
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor={`label-${idx}`}>Libellé (Affiché au client)</Label>
                     <Input
@@ -183,20 +218,24 @@ export function DemarcheFieldsEditor({
                     />
                   </div>
 
+                  {/* Shadcn Select instead of native <select> */}
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor={`type-${idx}`}>Type de saisie</Label>
-                    <select
-                      id={`type-${idx}`}
+                    <Select
                       value={field.fieldType}
-                      onChange={(e) => updateField(idx, { fieldType: e.target.value })}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      onValueChange={(val) => val && updateField(idx, { fieldType: val })}
                     >
-                      {FIELD_TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger id={`type-${idx}`}>
+                        <SelectValue placeholder="Type de saisie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FIELD_TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
@@ -223,17 +262,12 @@ export function DemarcheFieldsEditor({
                   </div>
 
                   {field.fieldType === "select" && (
-                    <div className="flex flex-col gap-1.5">
-                      <Label htmlFor={`options-${idx}`}>Options de la liste déroulante</Label>
-                      <Input
-                        id={`options-${idx}`}
-                        placeholder="Option A, Option B, Option C"
-                        value={field.options}
-                        onChange={(e) => updateField(idx, { options: e.target.value })}
-                        required
-                      />
-                      <span className="text-[10px] text-muted-foreground">Séparer les choix par une virgule.</span>
-                    </div>
+                    <OptionsEditor
+                      fieldIndex={idx}
+                      options={parseOptions(field.options)}
+                      onAdd={(opt) => addOption(idx, opt)}
+                      onRemove={(opt) => removeOption(idx, opt)}
+                    />
                   )}
                 </div>
 
@@ -256,11 +290,80 @@ export function DemarcheFieldsEditor({
           <Button type="submit" disabled={loading} className="gap-1.5">
             <Save className="h-4 w-4" /> {loading ? "Enregistrement..." : "Enregistrer la configuration"}
           </Button>
-          <Button asChild variant="outline" type="button">
-            <Link href="/admin/demarches">Annuler</Link>
-          </Button>
+          <Button
+            render={<Link href="/admin/demarches">Annuler</Link>}
+            variant="outline"
+            type="button"
+          />
         </div>
       </form>
+    </div>
+  )
+}
+
+/** Tags/chips UI for select options — easier to use than comma-separated text input */
+function OptionsEditor({
+  fieldIndex,
+  options,
+  onAdd,
+  onRemove,
+}: {
+  fieldIndex: number
+  options: string[]
+  onAdd: (opt: string) => void
+  onRemove: (opt: string) => void
+}) {
+  const [draft, setDraft] = useState("")
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault()
+      onAdd(draft)
+      setDraft("")
+    }
+  }
+
+  function handleBlur() {
+    if (draft.trim()) {
+      onAdd(draft)
+      setDraft("")
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={`options-input-${fieldIndex}`}>Options de la liste déroulante</Label>
+      <div className="flex flex-wrap gap-1.5 p-2 rounded-md border border-input bg-background min-h-[2.5rem]">
+        {options.map((opt) => (
+          <span
+            key={opt}
+            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary border border-primary/20"
+          >
+            {opt}
+            <button
+              type="button"
+              onClick={() => onRemove(opt)}
+              className="text-primary/60 hover:text-primary transition-colors"
+              aria-label={`Supprimer l'option ${opt}`}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
+        ))}
+        <input
+          id={`options-input-${fieldIndex}`}
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          placeholder={options.length === 0 ? "Tapez une option puis Entrée…" : "Ajouter…"}
+          className="flex-1 min-w-[8rem] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      <span className="text-[10px] text-muted-foreground">
+        Appuyez sur Entrée ou virgule pour ajouter chaque option.
+      </span>
     </div>
   )
 }

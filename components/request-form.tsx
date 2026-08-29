@@ -38,14 +38,21 @@ type FieldState = {
 export function RequestForm({
   documentTypeId,
   fields,
+  initialValues,
 }: {
   documentTypeId: number
   fields: FormField[]
+  initialValues?: Record<string, string>
 }) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [state, setState] = useState<Record<number, FieldState>>(() =>
-    Object.fromEntries(fields.map((f) => [f.id, { value: "", fileUrl: null, fileName: null, uploading: false }])),
+    Object.fromEntries(
+      fields.map((f) => [
+        f.id,
+        { value: initialValues?.[f.fieldKey] ?? "", fileUrl: null, fileName: null, uploading: false },
+      ]),
+    ),
   )
 
   function update(id: number, patch: Partial<FieldState>) {
